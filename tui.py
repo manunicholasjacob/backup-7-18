@@ -216,8 +216,8 @@ def main(stdscr):
 
         # Set error reporting to 0
         device_window_height = 15
-        device_window = curses.newwin(device_window_height, 60, height + 17, 1)
-        display_box(device_window, height + 17, 1, device_window_height, 60, "Device Control Status")
+        device_window = curses.newwin(device_window_height, 100, height + 7, 1)
+        display_box(device_window, height + 7, 2, device_window_height, 60, "Device Control Status")
         device_window.addstr(2, 2, "Setting error reporting to 0...")
         device_window.refresh()
 
@@ -226,16 +226,16 @@ def main(stdscr):
         device_control.store_original_values(bdfs)
         device_control.process_bdfs(bdfs)
 
-        device_window.addstr(4, 2, "Error reporting set to 0.")
-        device_window.refresh()
+        device_window.addstr(5, 2, "Error reporting set to 0.")
+        #device_window.refresh()
 
         # Run the sbr functionality
-        device_window.addstr(5, 2, "Running SBR tests...")
-        device_window.refresh()
+        device_window.addstr(7, 2, "Running SBR tests...")
+        #device_window.refresh()
 
         sbr.run_test(device_window, user_password, inputnum_loops, kill, slotlist)
 
-        device_window.addstr(7, 2, "SBR tests completed.")
+        device_window.addstr(9, 2, "SBR tests completed.")
         device_window.refresh()
         done = True
 
