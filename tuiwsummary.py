@@ -39,7 +39,6 @@ def main(stdscr):
                 if scroll_pad > 0: scroll_pad -= 1
                 window.refresh(scroll_pad, 0, window_offset_y, window_offset_x, min(curses.LINES-1, window_offset_y + window_height - 3), min(curses.COLS-1, window_offset_x + window_width - 5))
 
-
     # Display available slot numbers
     slot_numbers = sbr.get_slot_numbers()
     gpu_info_list = gpu_burn_script.gpu_traverse_up()
@@ -80,7 +79,7 @@ def main(stdscr):
     input_window_border = curses.newwin(input_window_height, input_window_width, height + 2, 1)
     display_box(input_window_border, height + 2, 1, input_window_height, input_window_width, "Command Line")
 
-    input_window.addstr(0, 0, "Choose operation (s: SBR, g: GPU Burn, d: 629 Diag | comma seperated): ")
+    input_window.addstr(0, 0, "Choose operation (s: SBR, g: GPU Burn, d: 629 Diag | comma separated): ")
     operations_input = input_window.getstr().decode().lower()
     operations = [operation.strip() for operation in operations_input.split(',')]
 
@@ -89,14 +88,12 @@ def main(stdscr):
         if operation not in ['s','g','d']: all_valid = False
     while not all_valid:
         input_window.clear()
-        input_window.addstr(0, 0, "Invalid Input - (s: SBR, g: GPU Burn, d: 629 Diag | comma seperated): ")
+        input_window.addstr(0, 0, "Invalid Input - (s: SBR, g: GPU Burn, d: 629 Diag | comma separated): ")
         operations_input = input_window.getstr().decode().lower()
         operations = [operation.strip() for operation in operations_input.split(',')]
         all_valid = True
         for operation in operations:
             if operation not in ['s','g','d']: all_valid = False
-
-
 
     input_window.addstr(3, 0, "Enter your password (sudo access): ")
     user_password = input_window.getstr().decode()
@@ -199,21 +196,13 @@ def main(stdscr):
         t.start()
         run_629_diag.main()
         pad_pos = gpu_burn_script.output_print(output_window, height + 3, 55, output_window_height, output_window_width, pad_pos, "629_Diag Finished Running")
-        pad_pos = gpu_burn_script.output_print(output_window, height + 3, 55, output_window_height, output_window_width, pad_pos, "Output writen to ./629_diag_output.txt")
+        pad_pos = gpu_burn_script.output_print(output_window, height + 3, 55, output_window_height, output_window_width, pad_pos, "Output written to ./629_diag_output.txt")
         done = True
         input_window.addstr(diag_pos, 0, "[x]\tRun 629 Diag".expandtabs(2))
         input_window.refresh()
         time.sleep(1.5)
 
     if 's' in operations:
-        '''  input_window.move(15,0)
-        input_window.clrtoeol()
-        input_window.addstr(15, 0, "Running SBR...")
-        input_window.refresh()
-        done = False
-        t = threading.Thread(target=animate, args=('s'))
-        t.start() '''
-
         # Set error reporting to 0
         device_window_height = 15
         device_window = curses.newwin(device_window_height, 100, height + 7, 1)
@@ -221,17 +210,16 @@ def main(stdscr):
         device_window.addstr(2, 2, "Setting error reporting to 0...")
         device_window.refresh()
 
-
         bdfs = device_control.get_all_bdfs()
         device_control.store_original_values(bdfs)
         device_control.process_bdfs(bdfs)
 
         device_window.addstr(5, 2, "Error reporting set to 0.")
-        #device_window.refresh()
+        # device_window.refresh()
 
         # Run the sbr functionality
         device_window.addstr(7, 2, "Running SBR tests...")
-        #device_window.refresh()
+        # device_window.refresh()
 
         sbr.run_test(device_window, user_password, inputnum_loops, kill, slotlist)
 
@@ -249,8 +237,6 @@ def main(stdscr):
         device_window.refresh()
 
     # Display summary screen
-    # stdscr.clear()
-    # display_box(stdscr, 1, 1, 20, 60, "Test Summary")
     input_window.addstr(15, 0, "Generating Summary Window...")
     input_window.refresh()
     time.sleep(0.5)
@@ -302,86 +288,46 @@ def main(stdscr):
         summary_line_pos += 1
         summary_window.refresh()
 
-    
     if 's' in operations:
         try:
             with open("./output.txt", "r") as file:
                 lines = file.readlines()
-    
+
             start_time = next(line for line in lines if line.startswith("Start Time:")).split(": ", 1)[1].strip()
             end_time = next(line for line in lines if line.startswith("End Time:")).split(": ", 1)[1].strip()
             tested_bdfs = next(line for line in lines if line.startswith("Tested BDFs:")).split(": ", 1)[1].strip()
             downstream_bdfs = next(line for line in lines if line.startswith("Downstream BDFs:")).split(": ", 1)[1].strip()
-            slot_numbers = next(line for line in lines if line.startswith("Slot Numbers:")).split(": ", 1)[1].strip()
             slot_test_counts = next(line for line in lines if line.startswith("Slot Test Counts:")).split(": ", 1)[1].strip()
             errors = [line for line in lines if "Error" in line]
-    
+
             summary_window.addstr(summary_line_pos, 0, "SBR SUMMARY")
             summary_line_pos += 1
-    
+
             def print_with_rollover(input, summary_line_pos):
                 print_width = summary_window_width - 4
-                rollover_number = int(len(input)/print_width)
+                rollover_number = int(len(input) / print_width)
                 for i in range(rollover_number):
-                    summary_window.addstr(summary_line_pos, 0, input[print_width*i:print_width*(i+1)])
+                    summary_window.addstr(summary_line_pos, 0, input[print_width * i:print_width * (i + 1)])
                     summary_line_pos += 1
-                summary_window.addstr(summary_line_pos, 0, input[print_width*rollover_number:])
+                summary_window.addstr(summary_line_pos, 0, input[print_width * rollover_number:])
                 summary_line_pos += 1
                 return summary_line_pos
-    
-            summary_line_pos = print_with_rollover(f"Tested BDFs:", summary_line_pos)
-            summary_line_pos = print_with_rollover(f"{tested_bdfs}", summary_line_pos)
-            summary_line_pos = print_with_rollover(f"Downstream BDFs:", summary_line_pos)
-            summary_line_pos = print_with_rollover(f"{downstream_bdfs}", summary_line_pos)
-            summary_line_pos = print_with_rollover(f"Slot Test Counts: {slot_test_counts}", summary_line_pos)
-    
-            if errors:
-                summary_window.addstr(summary_line_pos, 0, f"Errors: {len(errors)}")
-                for i, error in enumerate(errors[:5], start=10):  # Display up to 5 errors
-                    summary_window.addstr(summary_line_pos+i, 2, error.strip())
-            else:
-                summary_window.addstr(summary_line_pos, 0, "No errors detected.")
-        except Exception as e:
-            summary_window.addstr(summary_line_pos, 0, f"Error reading summary: {str(e)}")
-        summary_window.refresh()
-
-            # summary_window.addstr(2, 0, f"Start Time: {start_time}")
-            # summary_window.addstr(3, 0, f"End Time: {end_time}")
-            # stdscr.addstr(4, 2, f"Total Time Taken: {total_time:.2f} seconds")
-            # line = f"Tested BDFs: {tested_bdfs}"
-            # if len(line) > (summary_window_width - 4): 
-            #     summary_window.addstr(summary_line_pos, 0, line[:summary_window_width - 4])
-            #     summary_window.addstr(summary_line_pos+1, 0, line[:summary_window_width - 4])
-            # summary_window.addstr(summary_line_pos, 0, f"Tested BDFs: {tested_bdfs}")
-            # summary_line_pos += int(len(f"Tested BDFs: {tested_bdfs}")/summary_window_width)
-            # summary_window.addstr(summary_line_pos, 0, f"Downstream BDFs: {downstream_bdfs}")
-            # summary_line_pos += int(len(f"Downstream BDFs: {downstream_bdfs}")/summary_window_width)
-            # summary_window.addstr(summary_line_pos, 0, f"Slot Numbers: {slot_numbers}")
-            # summary_line_pos += int(len(f"Slot Numbers: {slot_numbers}")/summary_window_width)
-            # summary_window.addstr(summary_line_pos, 0, f"Slot Test Counts: {slot_test_counts}")
-            # summary_line_pos += int(len(f"Slot Test Counts: {slot_test_counts}")/summary_window_width)
 
             summary_line_pos = print_with_rollover(f"Tested BDFs:", summary_line_pos)
             summary_line_pos = print_with_rollover(f"{tested_bdfs}", summary_line_pos)
             summary_line_pos = print_with_rollover(f"Downstream BDFs:", summary_line_pos)
             summary_line_pos = print_with_rollover(f"{downstream_bdfs}", summary_line_pos)
-            summary_line_pos = print_with_rollover(f"Slot Numbers: {slot_numbers}", summary_line_pos)
             summary_line_pos = print_with_rollover(f"Slot Test Counts: {slot_test_counts}", summary_line_pos)
-
 
             if errors:
                 summary_window.addstr(summary_line_pos, 0, f"Errors: {len(errors)}")
                 for i, error in enumerate(errors[:5], start=10):  # Display up to 5 errors
-                    summary_window.addstr(summary_line_pos+i, 2, error.strip())
+                    summary_window.addstr(summary_line_pos + i, 2, error.strip())
             else:
                 summary_window.addstr(summary_line_pos, 0, "No errors detected.")
         except Exception as e:
             summary_window.addstr(summary_line_pos, 0, f"Error reading summary: {str(e)}")
         summary_window.refresh()
-
-    # quit = summary_window.getch()  # Wait for a key press to keep the interface open
-    # while quit != ord('q'):
-    #     quit = summary_window.getch()
 
     curses.cbreak()  # Switch off buffered input mode
     curses.noecho()  # Disable automatic echoing of keys
